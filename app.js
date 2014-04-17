@@ -62,7 +62,7 @@ app.get('/api/person/:id', function(req, res) {
 
 });
 
-app.post('/api/person/', function(req, res) {
+app.post('/api/person', function(req, res) {
     console.log(req.body);
 });
 
