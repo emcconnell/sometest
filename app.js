@@ -63,7 +63,16 @@ app.get('/api/person/:id', function(req, res) {
 });
 
 app.post('/api/person', function(req, res) {
-    console.log(req.body);
+    var person = {
+        PartitionKey : 'all'
+        , RowKey : req.body.id
+        , Name : req.body.name
+    };
+    tableService.insertEntity('people', person, function(error){
+        if(error){
+            throw error;
+        }
+    });
 });
 
 app.get('/api/test', function(req, res) {
