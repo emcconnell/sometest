@@ -26,13 +26,66 @@ app.use('/users', users);
 
 
 
-app.use('/api/test', function(req, res) {
+var nconf = require('nconf');
+
+nconf.env().defaults({
+    'AZURE_STORAGE_ACCOUNT': 'learnaccount',
+    'AZURE_STORAGE_ACCESS_KEY': 'oI5ONRqPNRe7fFHiF0bDrWkd7+dR0IfcC3pxEfIUwXGOB23//6d8SjP8TOOhSMHCXrqKjYm7eg3mf+mnF9/B7A=='
+});
+
+
+var azure = require('azure');
+
+var storageAccount = nconf.get('AZURE_STORAGE_ACCOUNT');
+var storageKey = nconf.get('AZURE_STORAGE_ACCESS_KEY');
+var tableService = azure.createTableService(storageAccount, storageKey);
+tableService.createTableIfNotExists('people', function(error){
+    if(!error)
+    {
+        // Table exists or created
+    }
+});
+
+app.get('/api/person/:id', function(req, res) {
+    tableService.queryEntity('people'
+        , 'all'
+        , req.params.id
+        , function(error, entity){
+            if(error){
+                throw error;
+            }
+            res.json({
+                "id": entity.RowKey
+               , "name": entity.Name
+            });
+        });
+
+});
+
+app.post('/api/person/', function(req, res) {
+    var person = {
+        PartitionKey : 'all'
+        , RowKey : req.body.id
+        , Name : req.body.name
+    };
+    tableService.insertEntity('people', person, function(error){
+        if(error){
+            throw error;
+        }
+    });
+});
+
+app.get('/api/test', function(req, res) {
     res.json({"id": 2, "name": "someone"});
 });
 
-app.set('/api/test', function(req, res) {
+app.post('/api/test', function(req, res) {
     console.log(req.body);
 });
+
+
+
+
 
 
 
